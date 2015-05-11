@@ -41,6 +41,17 @@ barplot( number.of.steps.by.day$percentage, names.arg=number.of.steps.by.day$dat
 
 ![](PA1_template_files/figure-html/unnamed-chunk-3-1.png) 
 
+
+```r
+mean.steps <- mean(number.of.steps.by.day$steps)
+median.steps <- median(number.of.steps.by.day$steps)
+```
+The mean nunber of step per day is 9354.2295082 steps per day.  
+The median is 10395 steps per day.
+
+
+
+
 ## What is the average daily activity pattern?
 
 

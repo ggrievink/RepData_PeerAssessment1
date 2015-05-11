@@ -42,6 +42,16 @@ number.of.steps.by.day <- mutate(number.of.steps.by.day, percentage = steps / to
 barplot( number.of.steps.by.day$percentage, names.arg=number.of.steps.by.day$date)
 ```
 
+```{r}
+mean.steps <- mean(number.of.steps.by.day$steps)
+median.steps <- median(number.of.steps.by.day$steps)
+```
+The mean nunber of step per day is `r mean.steps` steps per day.  
+The median is `r median.steps` steps per day.
+
+
+
+
 ## What is the average daily activity pattern?
 
 
