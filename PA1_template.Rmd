@@ -11,6 +11,7 @@ output:
 Extract the activity.cvs file from activity.zip,  
 created data.frame from the csv file and wrap the data frame into a data table
 ```{r loaddata,  message=FALSE}
+options(scipen = 1, digits = 2)
 library(data.table)
 library(dplyr)
 activity <- data.table(read.csv(unz("activity.zip","activity.csv"))) %>%
@@ -29,8 +30,7 @@ number.of.steps.by.day <- activity %>%
 
 In the historgram the number of steps per day are show  
 ```{r}
-barplot( number.of.steps.by.day$steps, names.arg=number.of.steps.by.day$date, 
-         ylab="Number of steps per day")
+barplot( number.of.steps.by.day$steps, names.arg=number.of.steps.by.day$date, ylab="Number of steps per day")
 ```
 
 ```{r}
@@ -53,23 +53,75 @@ print(p)
 
 ## Imputing missing values
 
+Missing values are imputed by setting that interval with the mean value of that interval over all days.  
+```{r}
+ 
+# Get the missing value count
+activity <- mutate(activity, missing = is.na(activity$steps) )
+missing.values.count <- sum(activity$missing)
+# Calculate the mean of each interval 
+intervaltable <- activity %>% 
+                 group_by(interval) %>% 
+                 summarise_each(funs(mean(., na.rm = TRUE)), steps)
+
+# Imputed the values into the activity data
+getImputedValue <- function(s)  { filter(intervaltable, interval=s)$steps }
+activity.imputed <- mutate(activity, steps = ifelse(missing, getImputedValue(interval) ,steps))
+
+```
+The number of missing values is `r missing.values.count`
+
+```{r results="asis"}  
+number.of.steps.by.day.imputed <- activity.imputed %>% 
+                          group_by(date) %>% 
+                          summarise_each(funs(sum(., na.rm = TRUE)), steps)
+```                          
+
+In the historgram the number of steps per day with imputed data are show  
+```{r}
+barplot( number.of.steps.by.day.imputed$steps, names.arg=number.of.steps.by.day.imputed$date, ylab="Number of steps per day")
+```
+
+```{r}
+mean.steps.imputed <- mean(number.of.steps.by.day.imputed$steps)
+median.steps.imputed <- median(number.of.steps.by.day.imputed$steps)
+```
+The mean number of step per day with imputed data is `r mean.steps.imputed` steps per day.  
+The median with imoputed data is`r median.steps.imputed` steps per day.
+
+The mean number of step per day without imputed data is `r mean.steps` steps per day  
+and the median without imputed data is `r median.steps` steps per day.  
+So the impackt on the result is big.
+
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
-
-
-
-
-
-
-
-
-
-To create a histogram on a day basis, the precentage steps per day relative to the total number of steps has to be calculated, 
 ```{r}
-# total.number.of.steps <-sum(activity$steps, na.rm = TRUE)
-# number.of.steps.by.day <- mutate(number.of.steps.by.day, percentage = steps / total.number.of.steps * 100)
+# library(lattice) 
+activity.imputed <- activity.imputed %>%
+                      mutate(daytype = weekdays(fulldate) %in% c("Saturday", "Sunday")) %>%
+                      mutate(daytype = factor(daytype ,labels= c("weekday", "weekend")))
+
+#
+activity.imputed.weekdays.mean <- activity.imputed %>% 
+                                  filter(daytype == "weekday")  %>% 
+                                  group_by(interval) %>% 
+                                  summarise_each(funs(mean(.)), steps) %>% 
+                                  mutate(daytype = "weekday")
+#
+activity.imputed.weekend.mean <- activity.imputed %>% 
+                                  filter(daytype == "weekend")  %>% 
+                                  group_by(interval) %>% 
+                                  summarise_each(funs(mean(.)), steps) %>% 
+                                  mutate(daytype = "weekend")
+
+# Combine for ploting 
+#combined <- rbind(activity.imputed.weekdays.mean, activity.imputed.weekend.mean) %>% 
+#             mutate(daytype = factor(daytype ,labels= c("weekday", "weekend")))
+ 
+
+
+par(mfrow = c(2,1))
+plot( activity.imputed.weekdays.mean$interval, activity.imputed.weekdays.mean$steps, type="l", xlab ="weekdays", ylab="Number of steps.")
+plot( activity.imputed.weekend.mean$interval, activity.imputed.weekend.mean$steps, type="l", xlab ="weekend", ylab="Number of steps.")
 ```
-
-
-
