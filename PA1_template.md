@@ -9,6 +9,26 @@ created data.frame from the csv file and wrap the data frame into a data table
 options(scipen = 1, digits = 2)
 library(data.table)
 library(dplyr)
+```
+
+```
+## 
+## Attaching package: 'dplyr'
+## 
+## The following objects are masked from 'package:data.table':
+## 
+##     between, last
+## 
+## The following object is masked from 'package:stats':
+## 
+##     filter
+## 
+## The following objects are masked from 'package:base':
+## 
+##     intersect, setdiff, setequal, union
+```
+
+```r
 activity <- data.table(read.csv(unz("activity.zip","activity.csv"))) %>%
             mutate(fulldate = strptime(date, format="%Y-%m-%d") + (interval %/% 100) * 60 + interval %% 100)  
 ```
@@ -59,6 +79,14 @@ print(p)
 
 ![](PA1_template_files/figure-html/unnamed-chunk-4-1.png) 
 
+
+```r
+max.step = filter(activity, steps == max(activity$steps, na.rm = TRUE))
+```
+
+The  maximum number of steps are in the five minutes interval at date 2012-11-27  interval 615   
+The number of steps is  806 
+
 ## Imputing missing values
 
 Missing values are imputed by setting that interval with the mean value of that interval over all days.  
@@ -91,7 +119,7 @@ In the historgram the number of steps per day with imputed data are show
 barplot( number.of.steps.by.day.imputed$steps, names.arg=number.of.steps.by.day.imputed$date, ylab="Number of steps per day")
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-7-1.png) 
+![](PA1_template_files/figure-html/unnamed-chunk-8-1.png) 
 
 
 ```r
@@ -128,15 +156,9 @@ activity.imputed.weekend.mean <- activity.imputed %>%
                                   summarise_each(funs(mean(.)), steps) %>% 
                                   mutate(daytype = "weekend")
 
-# Combine for ploting 
-#combined <- rbind(activity.imputed.weekdays.mean, activity.imputed.weekend.mean) %>% 
-#             mutate(daytype = factor(daytype ,labels= c("weekday", "weekend")))
- 
-
-
 par(mfrow = c(2,1))
 plot( activity.imputed.weekdays.mean$interval, activity.imputed.weekdays.mean$steps, type="l", xlab ="weekdays", ylab="Number of steps.")
 plot( activity.imputed.weekend.mean$interval, activity.imputed.weekend.mean$steps, type="l", xlab ="weekend", ylab="Number of steps.")
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-9-1.png) 
+![](PA1_template_files/figure-html/unnamed-chunk-10-1.png) 

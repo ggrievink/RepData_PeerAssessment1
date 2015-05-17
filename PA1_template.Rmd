@@ -10,7 +10,7 @@ output:
 ## Loading and preprocessing the data
 Extract the activity.cvs file from activity.zip,  
 created data.frame from the csv file and wrap the data frame into a data table
-```{r loaddata,  message=FALSE}
+```{r loaddata}
 options(scipen = 1, digits = 2)
 library(data.table)
 library(dplyr)
@@ -49,7 +49,15 @@ mean.steps <- mean(activity$steps, na.rm = TRUE)
 p <- qplot(activity$fulldate, activity$steps, geom="line") +scale_x_datetime(breaks = date_breaks("10 days"))
 p <- p + geom_abline(intercept = mean.steps, slope = 0, colour ="red")
 print(p)
+
 ```
+
+```{r}
+max.step = filter(activity, steps == max(activity$steps, na.rm = TRUE))
+```
+
+The  maximum number of steps are in the five minutes interval at date `r max.step$date`  interval `r max.step$interval`   
+The number of steps is  `r max.step$steps` 
 
 ## Imputing missing values
 
@@ -114,12 +122,6 @@ activity.imputed.weekend.mean <- activity.imputed %>%
                                   group_by(interval) %>% 
                                   summarise_each(funs(mean(.)), steps) %>% 
                                   mutate(daytype = "weekend")
-
-# Combine for ploting 
-#combined <- rbind(activity.imputed.weekdays.mean, activity.imputed.weekend.mean) %>% 
-#             mutate(daytype = factor(daytype ,labels= c("weekday", "weekend")))
- 
-
 
 par(mfrow = c(2,1))
 plot( activity.imputed.weekdays.mean$interval, activity.imputed.weekdays.mean$steps, type="l", xlab ="weekdays", ylab="Number of steps.")
